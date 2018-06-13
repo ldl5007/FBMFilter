@@ -1,0 +1,11 @@
+node_modules/
+npm-debug.log
+logs/
+.idea/*
+!.idea/runConfigurations
+build/
+package-lock.json
+ElectronBoilerplate*/
+Electron-Base-Application.iml
+untitled/
+FBMFilter.iml
