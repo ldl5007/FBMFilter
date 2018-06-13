@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, dialog } from 'electron';
 import { AppEvent, ElectronMain, IPCEvent } from '../helpers/electron-app';
 
 @ElectronMain
@@ -27,7 +27,7 @@ class Main {
     this.mainWindow.loadURL(url);
 
     // Open the DevTools.
-    this.mainWindow.webContents.openDevTools();
+    // this.mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     this.mainWindow.on('closed', () => {
@@ -69,36 +69,38 @@ class Main {
   private openSecondWindow() {
     console.log('woo hoo we got the message');
 
-    if (this.secondWindow) {
-      this.secondWindow.show();
-    } else {
-      // Create the browser window.
-      this.secondWindow = new BrowserWindow({width: 800, height: 600});
-
-      this.secondWindow.setMenuBarVisibility(false);
-
-      let url = require('url').format({
-        protocol: 'file',
-        slashes : true,
-        pathname: require('path').join(__dirname, 'second-window/index.html')
-      });
-
-      console.log(`loading file: ${url}`);
-
-      // and load the index.html of the app.
-      this.secondWindow.loadURL(url);
-
-      // Open the DevTools.
-      this.secondWindow.webContents.openDevTools();
-
-      // Emitted when the window is closed.
-      this.secondWindow.on('closed', () => {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        this.secondWindow = null;
-      });
-    }
+    console.log(dialog.showOpenDialog({properties: ['openFile']}));
+  //
+  //   if (this.secondWindow) {
+  //     this.secondWindow.show();
+  //   } else {
+  //     // Create the browser window.
+  //     this.secondWindow = new BrowserWindow({width: 800, height: 600});
+  //
+  //     this.secondWindow.setMenuBarVisibility(false);
+  //
+  //     let url = require('url').format({
+  //       protocol: 'file',
+  //       slashes : true,
+  //       pathname: require('path').join(__dirname, 'second-window/index.html')
+  //     });
+  //
+  //     console.log(`loading file: ${url}`);
+  //
+  //     // and load the index.html of the app.
+  //     this.secondWindow.loadURL(url);
+  //
+  //     // Open the DevTools.
+  //     this.secondWindow.webContents.openDevTools();
+  //
+  //     // Emitted when the window is closed.
+  //     this.secondWindow.on('closed', () => {
+  //       // Dereference the window object, usually you would store windows
+  //       // in an array if your app supports multi windows, this is the time
+  //       // when you should delete the corresponding element.
+  //       this.secondWindow = null;
+  //     });
+  //   }
   }
 }
 
