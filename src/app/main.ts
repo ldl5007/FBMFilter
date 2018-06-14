@@ -65,11 +65,18 @@ class Main {
     }
   }
 
-  @IPCEvent('open-second-window')
-  private openSecondWindow() {
+  @IPCEvent('browse-button')
+  private onBrowseButton(event) {
     console.log('woo hoo we got the message');
 
-    console.log(dialog.showOpenDialog({properties: ['openFile']}));
+    const selectedFile: string[] = dialog.showOpenDialog({properties: ['openFile']});
+
+    event.sender.send("testing", "dummy");
+  }
+
+  @IPCEvent('filter-button')
+  private onFilterButton() {
+    console.log('filter button clicked');
   }
 }
 

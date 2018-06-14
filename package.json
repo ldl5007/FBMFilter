@@ -1,5 +1,5 @@
 {
-  "name": "ElectronBoilerplate",
+  "name": "FBMFilter",
   "version": "0.1.0",
   "main": "build/app/main.js",
   "scripts": {
