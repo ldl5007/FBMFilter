@@ -1,10 +1,11 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { AppEvent, ElectronMain, IPCEvent } from '../helpers/electron-app';
 
 @ElectronMain
 class Main {
   public mainWindow: Electron.BrowserWindow;
   public secondWindow: Electron.BrowserWindow;
+  public ipcMain = ipcMain;
 
   /**
    * This function creates a window and loads index.html
@@ -70,8 +71,10 @@ class Main {
     console.log('woo hoo we got the message');
 
     const selectedFile: string[] = dialog.showOpenDialog({properties: ['openFile']});
-
-    event.sender.send("testing", "dummy");
+    if (selectedFile) {
+      console.log(selectedFile[0]);
+      event.sender.send('set-seleted-file', selectedFile[0]);
+    }
   }
 
   @IPCEvent('filter-button')
