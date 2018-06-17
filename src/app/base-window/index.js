@@ -10,7 +10,7 @@ $(document).ready(function(){
 
   $('#filter-button').on('click', function(){
     console.log('filter-button');
-    ipcRenderer.send('filter-button');
+    ipcRenderer.send('filter-button', $("#selected-file").val());
   });
 
   ipcRenderer.on('set-seleted-file', function(event, arg){

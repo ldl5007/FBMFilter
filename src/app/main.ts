@@ -12,13 +12,13 @@ class Main {
    */
   private createWindow() {
     // Create the browser window.
-    this.mainWindow = new BrowserWindow({width: 800, height: 600});
+    this.mainWindow = new BrowserWindow({ width: 800, height: 600 });
 
     this.mainWindow.setMenuBarVisibility(false);
 
     let url = require('url').format({
       protocol: 'file',
-      slashes : true,
+      slashes: true,
       pathname: require('path').join(__dirname, 'base-window/index.html')
     });
 
@@ -70,7 +70,7 @@ class Main {
   private onBrowseButton(event) {
     console.log('woo hoo we got the message');
 
-    const selectedFile: string[] = dialog.showOpenDialog({properties: ['openFile']});
+    const selectedFile: string[] = dialog.showOpenDialog({ properties: ['openFile'] });
     if (selectedFile) {
       console.log(selectedFile[0]);
       event.sender.send('set-seleted-file', selectedFile[0]);
@@ -78,8 +78,9 @@ class Main {
   }
 
   @IPCEvent('filter-button')
-  private onFilterButton() {
+  private onFilterButton(event, arg) {
     console.log('filter button clicked');
+    console.log(arg);
   }
 }
 
