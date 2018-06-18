@@ -1,8 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as childProcess from "child_process";
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { AppEvent, ElectronMain, IPCEvent } from '../helpers/electron-app';
 import { JSDOM } from 'jsdom';
+
+let parserThread;
 
 @ElectronMain
 class Main {
@@ -57,6 +60,13 @@ class Main {
   @AppEvent('ready')
   private onReady() {
     this.createWindow();
+
+    console.log(__dirname);
+
+    parserThread = childProcess.fork(`${__dirname}//parser.js`);
+    parserThread.on('message', (message) => {
+      log(message.counter);
+    });
   }
 
   @AppEvent('window-all-closed')
@@ -82,8 +92,8 @@ class Main {
   @IPCEvent('filter-button')
   private onFilterButton(event, filePath) {
     log(`start filter file: ${path.basename(filePath)}`);
-    const fileContent = fs.readFileSync(filePath);
-    parseHtml(fileContent);
+    // const fileContent = fs.readFileSync(filePath);
+    parserThread.send('testing');
   }
 
 }
@@ -98,9 +108,10 @@ function parseHtml(data) {
   const messages = dom.window.document.querySelectorAll('.pam._3-95._2pi0._2lej.uiBoxWhite.noborder');
   log(`Total of ${messages.length} record found`);
 
-  for (let index = 0; index < messages.length; index ++) {
-  // for (let index = 0; index < 10; index ++) {
+  // for (let index = 0; index < messages.length; index ++) {
+  for (let index = 0; index < 10; index ++) {
     const message = messages[index];
+
 
     if (!message.textContent.includes('Duration')){
       message.parentElement.removeChild(message);
