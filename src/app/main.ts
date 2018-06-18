@@ -1,10 +1,12 @@
+import * as fs from "fs";
+import * as path from "path";
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { AppEvent, ElectronMain, IPCEvent } from '../helpers/electron-app';
+import { JSDOM } from 'jsdom';
 
 @ElectronMain
 class Main {
   public mainWindow: Electron.BrowserWindow;
-  public secondWindow: Electron.BrowserWindow;
   public ipcMain = ipcMain;
 
   /**
@@ -72,16 +74,45 @@ class Main {
 
     const selectedFile: string[] = dialog.showOpenDialog({ properties: ['openFile'] });
     if (selectedFile) {
-      console.log(selectedFile[0]);
+      log(`selectedFile: ${path.basename(selectedFile[0])}`);
       event.sender.send('set-seleted-file', selectedFile[0]);
     }
   }
 
   @IPCEvent('filter-button')
-  private onFilterButton(event, arg) {
-    console.log('filter button clicked');
-    console.log(arg);
+  private onFilterButton(event, filePath) {
+    log(`start filter file: ${path.basename(filePath)}`);
+    const fileContent = fs.readFileSync(filePath);
+    parseHtml(fileContent);
   }
+
 }
 
-new Main();
+function log(message) {
+  console.log(message);
+  main.mainWindow.webContents.send('log-message', message);
+}
+
+function parseHtml(data) {
+  const dom = new JSDOM(data);
+  const messages = dom.window.document.querySelectorAll('.pam._3-95._2pi0._2lej.uiBoxWhite.noborder');
+  log(`Total of ${messages.length} record found`);
+
+  for (let index = 0; index < messages.length; index ++) {
+  // for (let index = 0; index < 10; index ++) {
+    const message = messages[index];
+
+    if (!message.textContent.includes('Duration')){
+      message.parentElement.removeChild(message);
+    }
+    else {
+      console.log(index);
+    }
+  }
+
+  fs.writeFileSync("dummyFile.html", dom.window.document.documentElement.outerHTML);
+  log(dom.window.document.querySelectorAll('.pam._3-95._2pi0._2lej.uiBoxWhite.noborder').length);
+
+}
+
+const main = new Main();

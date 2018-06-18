@@ -17,4 +17,10 @@ $(document).ready(function(){
     console.log('set selected file to ' + arg);
     $("#selected-file").val(arg);
   });
+
+  ipcRenderer.on('log-message', function(event, message){
+    console.log('log-message: ' + message);
+    const logText = $('#log-area').text() + message + '\n';
+    $('#log-area').text(logText)
+  });
 });
