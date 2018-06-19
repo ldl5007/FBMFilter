@@ -30,3 +30,7 @@
 .window-content {
     flex-direction: column;
 }
+
+.no-border {
+    border: none
+}
