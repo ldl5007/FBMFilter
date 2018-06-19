@@ -6,6 +6,7 @@
 
     <!-- include open source css, jQuery, and bootstrap files -->
     <link href="../css/photon-0.1.2-dist/css/photon.css" rel="stylesheet">
+    <link href="../css/base-window/base-window.css" rel="stylesheet">
     <script>
       window.$ = window.jQuery = require('jquery');
     </script>
@@ -14,29 +15,25 @@
     <script src="index.js"></script>
   </head>
   <body>
-    <div class="window">
+    <div class="window" style="padding:10px">
       <div>
-        <h2>Filter Facebook Messenger</h2>
-        <div>
+        <div class="form-group">
+          <input id="selected-file" type="text" style="border-width:thin">
           <button class="btn btn-default" id="browse-button">Browse</button>
-          <input id="selected-file" type="text" style="border-width:
-            thin">
         </div>
         <div>
           <button class="btn btn-default" id="filter-button">Filter</button>
         </div>
       </div>
-      <hr>
       <div style="height: 60vh">
-        <textarea id="log-area" readonly style="width:100%;
-          height:100%"></textarea>
+        <textarea class="form-control" id="log-area" readonly></textarea>
       </div>
-      <br>
       <div id="progress">
         <progress id="progress-bar" style="width:100%" max="100"
           value="20"></progress>
-        <input id="status-bar" style="width:100%" type="text">
+        <input class="form-control" id="status-bar" style="width:100%" type="text">
       </div>
+
     </div>
   </body>
 </html>>>
