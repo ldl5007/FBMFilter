@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Facebook Messenger Filter</title>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Facebook Messenger Filter</title>
 
-    <!-- include open source css, jQuery, and bootstrap files -->
-    <link href="../css/photon-0.1.2-dist/css/photon.css" rel="stylesheet">
-    <link href="../css/base-window/base-window.css" rel="stylesheet">
-    <script>
+        <!-- include open source css, jQuery, and bootstrap files -->
+        <link href="../css/photon-0.1.2-dist/css/photon.css" rel="stylesheet">
+        <link href="../css/base-window/base-window.css" rel="stylesheet">
+        <script>
       window.$ = window.jQuery = require('jquery');
-    </script>
+        </script>
 
-    <!-- include our main script -->
-    <script src="index.js"></script>
-  </head>
-  <body>
-    <div class="window" style="padding:10px">
-      <div>
-        <div class="form-group">
-          <input id="selected-file" type="text" style="border-width:thin">
-          <button class="btn btn-default" id="browse-button">Browse</button>
+        <!-- include our main script -->
+        <script src="index.js"></script>
+    </head>
+    <body>
+        <div class="window" id="main-window">
+            <div class="window-content">
+                <form>
+                    <div class="form-control">
+                        <div class="form-group">
+                            <input class="form-control" id="selected-file"
+                                type="text">
+                            <button class="btn btn-default" id="browse-button">Browse</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" id="filter-button">Filter</button>
+                        </div>
+                    </div>
+                    <div class="form-control" style="height: 60vh">
+                        <textarea class="form-control" id="log-area" readonly></textarea>
+                    </div>
+                    <div class="form-control" id="progress">
+                        <progress id="progress-bar" style="width:100%" max="100"
+                            value="20"></progress>
+                        <input class="form-control" id="status-bar"
+                            style="width:100%" type="text">
+                    </div>
+                </form>
+            </div>
         </div>
-        <div>
-          <button class="btn btn-default" id="filter-button">Filter</button>
-        </div>
-      </div>
-      <div style="height: 60vh">
-        <textarea class="form-control" id="log-area" readonly></textarea>
-      </div>
-      <div id="progress">
-        <progress id="progress-bar" style="width:100%" max="100"
-          value="20"></progress>
-        <input class="form-control" id="status-bar" style="width:100%" type="text">
-      </div>
-
-    </div>
-  </body>
-</html>>>
+    </body>
+</html>>>>
