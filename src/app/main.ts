@@ -65,7 +65,7 @@ class Main {
 
     parserThread = childProcess.fork(`${__dirname}//parser.js`);
     parserThread.on('message', (message) => {
-      log(message.counter);
+      log(message);
     });
   }
 
@@ -92,8 +92,7 @@ class Main {
   @IPCEvent('filter-button')
   private onFilterButton(event, filePath) {
     log(`start filter file: ${path.basename(filePath)}`);
-    // const fileContent = fs.readFileSync(filePath);
-    parserThread.send('testing');
+    parserThread.send(filePath);
   }
 
 }
@@ -101,29 +100,6 @@ class Main {
 function log(message) {
   console.log(message);
   main.mainWindow.webContents.send('log-message', message);
-}
-
-function parseHtml(data) {
-  const dom = new JSDOM(data);
-  const messages = dom.window.document.querySelectorAll('.pam._3-95._2pi0._2lej.uiBoxWhite.noborder');
-  log(`Total of ${messages.length} record found`);
-
-  // for (let index = 0; index < messages.length; index ++) {
-  for (let index = 0; index < 10; index ++) {
-    const message = messages[index];
-
-
-    if (!message.textContent.includes('Duration')){
-      message.parentElement.removeChild(message);
-    }
-    else {
-      console.log(index);
-    }
-  }
-
-  fs.writeFileSync("dummyFile.html", dom.window.document.documentElement.outerHTML);
-  log(dom.window.document.querySelectorAll('.pam._3-95._2pi0._2lej.uiBoxWhite.noborder').length);
-
 }
 
 const main = new Main();
