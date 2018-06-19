@@ -1,5 +1,5 @@
 {
-  "name": "FBMFilter",
+  "name": "facebook-messages-filter",
   "version": "0.1.0",
   "main": "build/app/main.js",
   "scripts": {
