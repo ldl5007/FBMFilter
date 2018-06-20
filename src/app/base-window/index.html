@@ -26,12 +26,12 @@
                 <div class="form-control no-border">
                     <div class="checkbox">
                         <label>
-                          <input type="checkbox"> Messages Statistic Summary
+                          <input type="checkbox" id="messages-summary-checkbox"> Messages Statistic Summary
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                          <input type="checkbox"> Filter Calls
+                          <input type="checkbox" id="filter-calls-checkbox" checked> Filter Calls
                         </label>
                     </div>
                 </div>    
@@ -43,8 +43,7 @@
                     <textarea class="form-control" id="log-area" readonly></textarea>
                 </div>
                 <div class="form-control no-border" id="progress">
-                    <progress id="progress-bar" style="width:100%" max="100"
-                        value="20"></progress>
+                    <progress id="progress-bar" style="width:100%" max="100" value="0"></progress>
                 </div>
             </div>
         </div>

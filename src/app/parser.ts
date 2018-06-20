@@ -1,24 +1,30 @@
 import * as fs from "fs";
 import * as path from "path";
 import { JSDOM } from "jsdom";
+import { LogMessage, ProgressUpdate } from "../app/interfaces/thread-message.interface";
 
 const MESSAGE_QUERY_STRING = '.pam._3-95._2pi0._2lej.uiBoxWhite.noborder';
 
-process.on("message", (filePath) => {
+process.on("message", (filePath: string) => {
     console.log(filePath);
     let foundMessages = 0;
 
+    sendMessage(`Start processing ${path.basename(filePath)}...`);
     const fileContent = fs.readFileSync(filePath);
-    process.send(`Start process ${path.basename(filePath)}`);
+    
+    sendMessage(`Loading ${path.basename(filePath)}...`);
     const dom = new JSDOM(fileContent);
-    const messages = dom.window.document.querySelectorAll(MESSAGE_QUERY_STRING);
-    process.send(`${messages.length} messages found`);
 
+    sendMessage('Searching for messages...');
+    const messages = dom.window.document.querySelectorAll(MESSAGE_QUERY_STRING);
+    sendMessage(`Found ${messages.length} messages.`);
+
+    sendMessage('Filtering for call messages...')
     for (let index = 0; index < messages.length; index ++) {
       const message = messages[index];
 
       if (index % 100 === 0){
-        process.send(`${index}/${messages.length}`);
+        process.send(new ProgressUpdate(index, messages.length));
       }
       
       if (!message.textContent.includes('Duration')){
@@ -26,16 +32,16 @@ process.on("message", (filePath) => {
       }
       else {
         foundMessages ++;
-        console.log(index);
       }
-
     }
-    
-    process.send(`Found ${foundMessages} messages`);
+  
+    sendMessage(`Found ${foundMessages} call messages`);
 
-    const outFileName = 'dummyFile.html';
+    const outFileName = filePath.replace(path.basename(filePath), 'CallLog.html');;
     fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
-    process.send(`Write Data to ${outFileName}`);
-
-    process.send("end process");
+    sendMessage(`Write Data to ${outFileName}`);
 });
+
+function sendMessage(message: string) {
+  process.send(new LogMessage(message));
+}

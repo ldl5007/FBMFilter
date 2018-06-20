@@ -10,7 +10,12 @@ $(document).ready(function(){
 
   $('#filter-button').on('click', function(){
     console.log('filter-button');
-    ipcRenderer.send('filter-button', $("#selected-file").val());
+    let filterData = {
+      selectedFile: $("#selected-file").val(),
+      filterCalls: $("#filter-calls-checkbox:checked").val(),
+      messagesSummary: $("#messages-summary-checkbox:checked").val()
+    };
+    ipcRenderer.send('filter-button', filterData);
   });
 
   ipcRenderer.on('set-seleted-file', function(event, arg){
@@ -22,5 +27,14 @@ $(document).ready(function(){
     console.log('log-message: ' + message);
     const logText = $('#log-area').text() + message + '\n';
     $('#log-area').text(logText)
+  });
+
+  ipcRenderer.on('set-progress', function(event, progressData){
+    if (progressData.max) {
+      $("#progress-bar").attr("max", progressData.max);
+    }
+    if (progressData.val) {
+      $("#progress-bar").val(progressData.val);
+    }
   });
 });

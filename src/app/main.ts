@@ -3,7 +3,7 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { AppEvent, ElectronMain, IPCEvent } from '../helpers/electron-app';
-import { JSDOM } from 'jsdom';
+import { ThreadMessage } from "../app/interfaces/thread-message.interface";
 
 let parserThread;
 
@@ -64,8 +64,16 @@ class Main {
     console.log(__dirname);
 
     parserThread = childProcess.fork(`${__dirname}//parser.js`);
-    parserThread.on('message', (message) => {
-      log(message);
+    parserThread.on('message', (threadMessage: ThreadMessage) => {
+      console.log(JSON.stringify(threadMessage));
+      switch(threadMessage.type) {
+        case "message":
+          log(threadMessage.message);
+          break;
+        case "progress":
+          setProgress(threadMessage.val, threadMessage.max);
+          break;
+      }
     });
   }
 
@@ -84,15 +92,34 @@ class Main {
 
     const selectedFile: string[] = dialog.showOpenDialog({ properties: ['openFile'] });
     if (selectedFile) {
-      log(`selectedFile: ${path.basename(selectedFile[0])}`);
+      log(`Selected File: ${path.basename(selectedFile[0])}`);
       event.sender.send('set-seleted-file', selectedFile[0]);
     }
   }
 
   @IPCEvent('filter-button')
-  private onFilterButton(event, filePath) {
-    log(`start filter file: ${path.basename(filePath)}`);
-    parserThread.send(filePath);
+  private onFilterButton(event, filterData) {
+
+    // check selectedFile
+    if (filterData.selectedFile === "") {
+      dialog.showMessageBox({message:"Orginal message file is missing"});
+      return;
+    }
+
+    if (filterData.filterCalls === "" && filterData.messageSummary === "") {
+      dialog.showMessageBox({message:"Please select an operation"});
+      return;
+    }
+
+    if (filterData.filterCalls === "on") {
+      log(`Performing call filter for ${filterData.selectedFile}`);
+      parserThread.send(filterData.selectedFile);
+    }
+
+    if (filterData.messagesSummary === "on") {
+      log(`Performing message summary for ${filterData.selectedFile}`);
+      dialog.showMessageBox({message:"work in progress"});
+    }
   }
 
 }
@@ -100,6 +127,18 @@ class Main {
 function log(message) {
   console.log(message);
   main.mainWindow.webContents.send('log-message', message);
+}
+
+function setProgress(val?, max?) {
+  let progressData: {[k: string]: any} = {};
+  if (val) {
+    progressData.val = val;
+  }
+  if (max) {
+    progressData.max = max;
+  }
+
+  main.mainWindow.webContents.send('set-progress', progressData);
 }
 
 const main = new Main();
