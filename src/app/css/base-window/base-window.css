@@ -15,16 +15,20 @@
 
 #main-window {
     padding:10px;
+    background-color: gray
 }
 
 #selected-file {
     border-width: thin;
+    width: 85vw
 }
 
 #log-area {
     width:100%;
     height:100%;
-    resize:none
+    border-color: black;
+    resize:none;
+    background-color: lightgray
 }
 
 .window-content {
