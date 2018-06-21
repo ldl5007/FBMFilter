@@ -4,6 +4,10 @@ import { JSDOM } from "jsdom";
 import { LogMessage, ProgressUpdate } from "../app/interfaces/thread-message.interface";
 
 const MESSAGE_QUERY_STRING = '.pam._3-95._2pi0._2lej.uiBoxWhite.noborder';
+const MESSAGE_TITLE_QUERY_STRING = '._3-96._2pio._2lek._2lel';
+const MESSAGE_CONTENT_QUERY_STRING = '._3-96._2let';
+const MESSAGE_TIMESTAMP_QUERY_STRING = '._3-94._2lem';
+
 
 process.on("message", (filePath: string) => {
     console.log(filePath);
