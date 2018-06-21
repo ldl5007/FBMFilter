@@ -31,6 +31,10 @@
     background-color: lightgray
 }
 
+#footer-text {
+    text-align: right;
+}
+
 .window-content {
     flex-direction: column;
 }
