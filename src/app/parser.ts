@@ -9,16 +9,20 @@ process.on("message", (filePath: string) => {
     console.log(filePath);
     let foundMessages = 0;
 
+    // Read file content
     sendMessage(`Start processing ${path.basename(filePath)}...`);
     const fileContent = fs.readFileSync(filePath);
     
+    // Build DOM from file content
     sendMessage(`Loading ${path.basename(filePath)}...`);
     const dom = new JSDOM(fileContent);
 
+    // Query for all messages within the DOM
     sendMessage('Searching for messages...');
     const messages = dom.window.document.querySelectorAll(MESSAGE_QUERY_STRING);
     sendMessage(`Found ${messages.length} messages.`);
 
+    // Loop throught all of the messages and filter out only message with "duration"
     sendMessage('Filtering for call messages...')
     for (let index = 0; index < messages.length; index ++) {
       const message = messages[index];
@@ -37,6 +41,7 @@ process.on("message", (filePath: string) => {
   
     sendMessage(`Found ${foundMessages} call messages`);
 
+    // Write filter data to file.
     const outFileName = filePath.replace(path.basename(filePath), 'CallLog.html');;
     fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
     sendMessage(`Write Data to ${outFileName}`);
