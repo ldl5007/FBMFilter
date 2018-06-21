@@ -8,10 +8,17 @@ const MESSAGE_TITLE_QUERY_STRING = '._3-96._2pio._2lek._2lel';
 const MESSAGE_CONTENT_QUERY_STRING = '._3-96._2let';
 const MESSAGE_TIMESTAMP_QUERY_STRING = '._3-94._2lem';
 
+class ParsedMessage {
+  public element: Element;
+  public title: string;
+  public content: string;
+  public timestamp: string;
+}
 
 process.on("message", (filePath: string) => {
     console.log(filePath);
     let foundMessages = 0;
+    const parsedMessages: ParsedMessage[] = [];
 
     // Read file content
     sendMessage(`Start processing ${path.basename(filePath)}...`);
@@ -27,7 +34,7 @@ process.on("message", (filePath: string) => {
     sendMessage(`Found ${messages.length} messages.`);
 
     // Loop throught all of the messages and filter out only message with "duration"
-    sendMessage('Filtering for call messages...')
+    sendMessage('Extracting messages informations...');
     for (let index = 0; index < messages.length; index ++) {
       const message = messages[index];
 
@@ -35,14 +42,34 @@ process.on("message", (filePath: string) => {
         process.send(new ProgressUpdate(index, messages.length));
       }
       
-      if (!message.textContent.includes('Duration')){
-        message.parentElement.removeChild(message);
+      const parsedMessage = new ParsedMessage();
+      parsedMessage.element = message;
+      parsedMessage.title = message.querySelector(MESSAGE_TITLE_QUERY_STRING).textContent;
+      parsedMessage.content = message.querySelector(MESSAGE_CONTENT_QUERY_STRING).textContent;
+      parsedMessage.timestamp = message.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING).textContent;
+      parsedMessages.push(parsedMessage);      
+    }
+    sendMessage('Extracting messages informations completed');
+
+    sendMessage('Filtering for call messages...')
+    parsedMessages.forEach((message: ParsedMessage, index: number) => {
+      if (index % 100 === 0){
+        process.send(new ProgressUpdate(index, parsedMessages.length));
+      }
+
+      if (!message.content.includes('Duration')){
+        message.element.parentElement.removeChild(message.element);
       }
       else {
         foundMessages ++;
       }
-    }
-  
+    });
+    sendMessage('Filtering for call messages completed')
+    
+    
+
+    console.log(parsedMessages);
+
     sendMessage(`Found ${foundMessages} call messages`);
 
     // Write filter data to file.
