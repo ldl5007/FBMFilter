@@ -65,11 +65,6 @@ process.on("message", (filePath: string) => {
       }
     });
     sendMessage('Filtering for call messages completed')
-    
-    
-
-    console.log(parsedMessages);
-
     sendMessage(`Found ${foundMessages} call messages`);
 
     // Write filter data to file.
