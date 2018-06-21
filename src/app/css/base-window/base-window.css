@@ -36,5 +36,22 @@
 }
 
 .no-border {
-    border: none
+    border: none;
+    border-radius: 0px;
+}
+
+.top-border {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border: none;
+}
+
+.bottom-border {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border: none;
 }
