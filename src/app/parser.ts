@@ -16,10 +16,11 @@ class ParsedMessage {
 }
 
 process.on("message", (filePath: string) => {
-    console.log(filePath);
-    let foundMessages = 0;
-    const parsedMessages: ParsedMessage[] = [];
+  console.log(filePath);
+  let foundMessages = 0;
+  const parsedMessages: ParsedMessage[] = [];
 
+  try {
     // Read file content
     sendMessage(`Start processing ${path.basename(filePath)}...`);
     const fileContent = fs.readFileSync(filePath);
@@ -31,7 +32,6 @@ process.on("message", (filePath: string) => {
     // Query for all messages within the DOM
     sendMessage('Searching for messages...');
     const messages = dom.window.document.querySelectorAll(MESSAGE_QUERY_STRING);
-    sendMessage(`Found ${messages.length} messages.`);
 
     // Loop throught all of the messages and filter out only message with "duration"
     sendMessage('Extracting messages informations...');
@@ -44,14 +44,22 @@ process.on("message", (filePath: string) => {
       
       const parsedMessage = new ParsedMessage();
       parsedMessage.element = message;
-      parsedMessage.title = message.querySelector(MESSAGE_TITLE_QUERY_STRING).textContent;
-      parsedMessage.content = message.querySelector(MESSAGE_CONTENT_QUERY_STRING).textContent;
-      parsedMessage.timestamp = message.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING).textContent;
-      parsedMessages.push(parsedMessage);      
+
+      const titleElement = message.querySelector(MESSAGE_TITLE_QUERY_STRING);
+      const contentElement = message.querySelector(MESSAGE_CONTENT_QUERY_STRING);
+      const timestampElement = message.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING);
+
+      if (titleElement && contentElement && timestampElement){
+        parsedMessage.title = titleElement.textContent;
+        parsedMessage.content = contentElement.textContent;
+        parsedMessage.timestamp = timestampElement.textContent;
+        parsedMessages.push(parsedMessage);   
+      }
     }
     sendMessage('Extracting messages informations completed');
+    sendMessage(`Found ${parsedMessages.length} messages.`);
 
-    sendMessage('Filtering for call messages...')
+    sendMessage('Filtering for call messages...');
     parsedMessages.forEach((message: ParsedMessage, index: number) => {
       if (index % 100 === 0){
         process.send(new ProgressUpdate(index, parsedMessages.length));
@@ -64,13 +72,16 @@ process.on("message", (filePath: string) => {
         foundMessages ++;
       }
     });
-    sendMessage('Filtering for call messages completed')
+    sendMessage('Filtering for call messages completed');
     sendMessage(`Found ${foundMessages} call messages`);
 
     // Write filter data to file.
     const outFileName = filePath.replace(path.basename(filePath), 'CallLog.html');;
     fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
     sendMessage(`Write Data to ${outFileName}`);
+  } catch (error) {
+    sendMessage(error.message);
+  }
 });
 
 function sendMessage(message: string) {

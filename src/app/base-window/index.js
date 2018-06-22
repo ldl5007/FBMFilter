@@ -5,6 +5,7 @@ $(document).ready(function(){
 
   $('#browse-button').on('click', function(){
       console.log('browse-button');
+      $('#log-area').text('');
       ipcRenderer.send('browse-button');
   });
 
