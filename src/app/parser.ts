@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as moment from "moment";
 import { JSDOM } from "jsdom";
 import { LogMessage, ProgressUpdate } from "../app/interfaces/thread-message.interface";
 
@@ -8,11 +9,18 @@ const MESSAGE_TITLE_QUERY_STRING = '._3-96._2pio._2lek._2lel';
 const MESSAGE_CONTENT_QUERY_STRING = '._3-96._2let';
 const MESSAGE_TIMESTAMP_QUERY_STRING = '._3-94._2lem';
 
+const TIMESTAMP_FORMAT= 'MMM DD, YYY hh:mmA';
+
 class ParsedMessage {
   public element: Element;
   public title: string;
   public content: string;
   public timestamp: string;
+}
+
+class MessageStat {
+  public range: string;
+  public messageCount: number;
 }
 
 process.on("message", (filePath: string) => {
@@ -59,6 +67,8 @@ process.on("message", (filePath: string) => {
     sendMessage('Extracting messages informations completed');
     sendMessage(`Found ${parsedMessages.length} messages.`);
 
+    gatherMessageStatistic(parsedMessages);
+
     sendMessage('Filtering for call messages...');
     parsedMessages.forEach((message: ParsedMessage, index: number) => {
       if (index % 100 === 0){
@@ -86,4 +96,12 @@ process.on("message", (filePath: string) => {
 
 function sendMessage(message: string) {
   process.send(new LogMessage(message));
+}
+
+function gatherMessageStatistic(parsedMessages: ParsedMessage[]): any {
+  parsedMessages.forEach((message: ParsedMessage, index: number) => {
+    console.log(message.timestamp);
+    const time:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
+    console.log(time);
+  });
 }
