@@ -9,7 +9,7 @@ const MESSAGE_TITLE_QUERY_STRING = '._3-96._2pio._2lek._2lel';
 const MESSAGE_CONTENT_QUERY_STRING = '._3-96._2let';
 const MESSAGE_TIMESTAMP_QUERY_STRING = '._3-94._2lem';
 
-const TIMESTAMP_FORMAT= 'MMM DD, YYY hh:mmA';
+const TIMESTAMP_FORMAT= 'MMM DD, YYYY hh:mmA';
 
 class ParsedMessage {
   public element: Element;
@@ -18,9 +18,14 @@ class ParsedMessage {
   public timestamp: string;
 }
 
-class MessageStat {
-  public range: string;
-  public messageCount: number;
+class MessageStatistic {
+  [key:string]: Statistic;
+}
+
+class Statistic{
+  startTime: moment.Moment = null;
+  endTime: moment.Moment = null;
+  messageCount: number = 0;
 }
 
 process.on("message", (filePath: string) => {
@@ -99,9 +104,28 @@ function sendMessage(message: string) {
 }
 
 function gatherMessageStatistic(parsedMessages: ParsedMessage[]): any {
+  const messageStat: MessageStatistic = {};
+
   parsedMessages.forEach((message: ParsedMessage, index: number) => {
     console.log(message.timestamp);
-    const time:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
-    console.log(time);
+    const timestamp:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
+    console.log(timestamp);
+
+    const startTime = moment({'year': timestamp.year(), 'month': timestamp.month()});
+    const endTime = moment(startTime).add(1, 'months');
+
+    console.log(startTime);
+    console.log(endTime);
+
+    if (timestamp.isBetween(startTime, endTime)) {
+      if (!messageStat.hasOwnProperty(startTime.toString())) {
+        messageStat[startTime.toString()] = new Statistic();
+      }
+
+      messageStat[startTime.toString()].messageCount ++;
+    }
   });
+
+  console.log(JSON.stringify(messageStat));
+  return messageStat;
 }
