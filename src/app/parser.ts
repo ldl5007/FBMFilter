@@ -32,6 +32,8 @@ process.on("message", (filePath: string) => {
   console.log(filePath);
   let foundMessages = 0;
   const parsedMessages: ParsedMessage[] = [];
+  const filterCalls: boolean = true;
+  const gatheringStat: boolean = true;
 
   try {
     // Read file content
@@ -62,38 +64,42 @@ process.on("message", (filePath: string) => {
       const contentElement = message.querySelector(MESSAGE_CONTENT_QUERY_STRING);
       const timestampElement = message.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING);
 
-      if (titleElement && contentElement && timestampElement){
+      if (titleElement && contentElement && timestampElement) {
         parsedMessage.title = titleElement.textContent;
         parsedMessage.content = contentElement.textContent;
         parsedMessage.timestamp = timestampElement.textContent;
-        parsedMessages.push(parsedMessage);   
+        parsedMessages.push(parsedMessage);
       }
     }
     sendMessage('Extracting messages informations completed');
     sendMessage(`Found ${parsedMessages.length} messages.`);
 
-    gatherMessageStatistic(parsedMessages);
+    if (gatheringStat) {
+      const messageStat: MessageStatistic = gatherMessageStatistic(parsedMessages);
+    }
 
-    sendMessage('Filtering for call messages...');
-    parsedMessages.forEach((message: ParsedMessage, index: number) => {
-      if (index % 100 === 0){
-        process.send(new ProgressUpdate(index, parsedMessages.length));
-      }
-
-      if (!message.content.includes('Duration')){
-        message.element.parentElement.removeChild(message.element);
-      }
-      else {
-        foundMessages ++;
-      }
-    });
-    sendMessage('Filtering for call messages completed');
-    sendMessage(`Found ${foundMessages} call messages`);
-
-    // Write filter data to file.
-    const outFileName = filePath.replace(path.basename(filePath), 'CallLog.html');;
-    fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
-    sendMessage(`Write Data to ${outFileName}`);
+    if (filterCalls) {
+      sendMessage('Filtering for call messages...');
+      parsedMessages.forEach((message: ParsedMessage, index: number) => {
+        if (index % 100 === 0){
+          process.send(new ProgressUpdate(index, parsedMessages.length));
+        }
+  
+        if (!message.content.includes('Duration')){
+          message.element.parentElement.removeChild(message.element);
+        }
+        else {
+          foundMessages ++;
+        }
+      });
+      sendMessage('Filtering for call messages completed');
+      sendMessage(`Found ${foundMessages} call messages`);
+  
+      // Write filter data to file.
+      const outFileName = filePath.replace(path.basename(filePath), 'CallLog.html');;
+      fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
+      sendMessage(`Write Data to ${outFileName}`);
+    }
   } catch (error) {
     sendMessage(error.message);
   }
@@ -103,10 +109,15 @@ function sendMessage(message: string) {
   process.send(new LogMessage(message));
 }
 
-function gatherMessageStatistic(parsedMessages: ParsedMessage[]): any {
+function gatherMessageStatistic(parsedMessages: ParsedMessage[]): MessageStatistic {
   const messageStat: MessageStatistic = {};
 
+  sendMessage('Gathering messages statistic ...');
   parsedMessages.forEach((message: ParsedMessage, index: number) => {
+    if (index % 100 === 0){
+      process.send(new ProgressUpdate(index, parsedMessages.length));
+    }
+
     console.log(message.timestamp);
     const timestamp:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
     console.log(timestamp);
@@ -122,9 +133,26 @@ function gatherMessageStatistic(parsedMessages: ParsedMessage[]): any {
         messageStat[startTime.toString()] = new Statistic();
       }
 
+      if (messageStat[startTime.toString()].startTime === null) {
+        messageStat[startTime.toString()].startTime = timestamp;
+      } else {
+        if (messageStat[startTime.toString()].startTime.isAfter(timestamp)) {
+          messageStat[startTime.toString()].startTime = timestamp;
+        }
+      }
+
+      if (messageStat[startTime.toString()].endTime === null) {
+        messageStat[startTime.toString()].endTime = timestamp;
+      } else {
+        if (messageStat[startTime.toString()].endTime.isBefore(timestamp)) {
+          messageStat[startTime.toString()].endTime = timestamp;
+        }
+      }
+
       messageStat[startTime.toString()].messageCount ++;
     }
   });
+  sendMessage('Gathering messages statistic completed');
 
   console.log(JSON.stringify(messageStat));
   return messageStat;
