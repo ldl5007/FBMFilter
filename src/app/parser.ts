@@ -76,6 +76,11 @@ process.on("message", (filePath: string) => {
 
     if (gatheringStat) {
       const messageStat: MessageStatistic = gatherMessageStatistic(parsedMessages);
+      
+      // Write filter data to file.
+      const outFileName = filePath.replace(path.basename(filePath), 'MessageStatistic.json');;
+      fs.writeFileSync(outFileName, JSON.stringify(messageStat));
+      sendMessage(`Write Data to ${outFileName}`);
     }
 
     if (filterCalls) {
@@ -118,15 +123,10 @@ function gatherMessageStatistic(parsedMessages: ParsedMessage[]): MessageStatist
       process.send(new ProgressUpdate(index, parsedMessages.length));
     }
 
-    console.log(message.timestamp);
     const timestamp:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
-    console.log(timestamp);
 
     const startTime = moment({'year': timestamp.year(), 'month': timestamp.month()});
     const endTime = moment(startTime).add(1, 'months');
-
-    console.log(startTime);
-    console.log(endTime);
 
     if (timestamp.isBetween(startTime, endTime)) {
       if (!messageStat.hasOwnProperty(startTime.toString())) {
