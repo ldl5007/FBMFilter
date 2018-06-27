@@ -19,6 +19,16 @@ $(document).ready(function(){
     ipcRenderer.send('filter-button', filterData);
   });
 
+  $('#messages-summary-checkbox').on('click', () => {
+    console.log('message-summary-checkbox clicked');
+
+    if($("#messages-summary-checkbox:checked").val() === "on") {
+      $('#messages-summary-select').attr("disabled", null);
+    } else {
+      $('#messages-summary-select').attr("disabled", "disabled");
+    }
+  });
+
   ipcRenderer.on('set-seleted-file', function(event, arg){
     console.log('set selected file to ' + arg);
     $("#selected-file").val(arg);

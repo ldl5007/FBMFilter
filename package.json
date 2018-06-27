@@ -2,6 +2,11 @@
   "name": "facebook-messages-filter",
   "version": "0.1.0",
   "main": "build/app/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ldl5007/FBMFilter.git"
+  },
+  "license": "MIT",
   "scripts": {
     "build-app": "electron-packager .",
     "prestart": "gulp build",
