@@ -16,7 +16,7 @@ export class LogMessage implements ILogMessage {
 export interface IProgressUpdate {
     type: "progress",
     val: number,
-    max: Number
+    max: number
 }
 
 export class ProgressUpdate implements IProgressUpdate {
@@ -29,6 +29,20 @@ export class ProgressUpdate implements IProgressUpdate {
         this.val = val;
         this.max = max;
     }
+}
+
+export interface IOperationData {
+    fullPath: string;
+    callFilter: boolean;
+    messagesSummary: boolean;
+    summaryType: string;
+}
+
+export class OperationData implements IOperationData{
+    public fullPath = "";
+    public callFilter = false;
+    public messagesSummary = false;
+    public summaryType = "";
 }
 
 export type ThreadMessage = ILogMessage | IProgressUpdate;

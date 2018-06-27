@@ -3,7 +3,7 @@ import * as path from "path";
 import * as childProcess from "child_process";
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { AppEvent, ElectronMain, IPCEvent } from '../helpers/electron-app';
-import { ThreadMessage } from "../app/interfaces/thread-message.interface";
+import { ThreadMessage, IOperationData, OperationData } from "../app/interfaces/thread-message.interface";
 
 let parserThread;
 
@@ -61,20 +61,8 @@ class Main {
   private onReady() {
     this.createWindow();
 
-    console.log(__dirname);
-
     parserThread = childProcess.fork(`${__dirname}//parser.js`);
-    parserThread.on('message', (threadMessage: ThreadMessage) => {
-      console.log(JSON.stringify(threadMessage));
-      switch(threadMessage.type) {
-        case "message":
-          log(threadMessage.message);
-          break;
-        case "progress":
-          setProgress(threadMessage.val, threadMessage.max);
-          break;
-      }
-    });
+    parserThread.on('message', parserThreadMessageHandler);
   }
 
   @AppEvent('window-all-closed')
@@ -100,11 +88,14 @@ class Main {
   @IPCEvent('filter-button')
   private onFilterButton(event, filterData) {
     console.log(filterData);
+    const operationData: IOperationData = new OperationData();
 
     // check selectedFile
     if (filterData.selectedFile === "") {
       dialog.showMessageBox({message:"Orginal message file is missing"});
       return;
+    } else {
+      operationData.fullPath = filterData.selectedFile;
     }
 
     if (filterData.filterCalls === "" && filterData.messageSummary === "") {
@@ -114,13 +105,18 @@ class Main {
 
     if (filterData.filterCalls === "on") {
       log(`Performing call filter for ${filterData.selectedFile}`);
-      parserThread.send(filterData.selectedFile);
+      operationData.callFilter = true;
     }
 
     if (filterData.messagesSummary === "on") {
       log(`Performing message summary for ${filterData.selectedFile}`);
-      dialog.showMessageBox({message:"work in progress"});
+      operationData.messagesSummary = true;
+      operationData.summaryType = filterData.summaryType;
     }
+
+    console.log(JSON.stringify(operationData));
+
+    parserThread.send(operationData);
   }
 
 }
@@ -141,5 +137,18 @@ function setProgress(val?, max?) {
 
   main.mainWindow.webContents.send('set-progress', progressData);
 }
+
+function parserThreadMessageHandler(threadMessage: ThreadMessage) {
+  console.log(JSON.stringify(threadMessage));
+  switch(threadMessage.type) {
+    case "message":
+      log(threadMessage.message);
+      break;
+    case "progress":
+      setProgress(threadMessage.val, threadMessage.max);
+      break;
+  }
+}
+
 
 const main = new Main();

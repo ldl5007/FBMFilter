@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as moment from "moment";
 import { JSDOM } from "jsdom";
-import { LogMessage, ProgressUpdate } from "../app/interfaces/thread-message.interface";
+import { LogMessage, ProgressUpdate, IOperationData } from "../app/interfaces/thread-message.interface";
 
 const MESSAGE_QUERY_STRING = '.pam._3-95._2pi0._2lej.uiBoxWhite.noborder';
 const MESSAGE_TITLE_QUERY_STRING = '._3-96._2pio._2lek._2lel';
@@ -28,12 +28,14 @@ class Statistic{
   messageCount: number = 0;
 }
 
-process.on("message", (filePath: string) => {
+process.on("message", (operationData: IOperationData) => {
+  const filePath = operationData.fullPath;
   console.log(filePath);
   let foundMessages = 0;
   const parsedMessages: ParsedMessage[] = [];
-  const filterCalls: boolean = true;
-  const gatheringStat: boolean = true;
+  const filterCalls: boolean = operationData.callFilter;
+  const gatheringStat: boolean = operationData.messagesSummary;
+  const summaryType:string = operationData.summaryType;
 
   try {
     // Read file content
@@ -75,7 +77,7 @@ process.on("message", (filePath: string) => {
     sendMessage(`Found ${parsedMessages.length} messages.`);
 
     if (gatheringStat) {
-      const messageStat: MessageStatistic = gatherMessageStatistic(parsedMessages);
+      const messageStat: MessageStatistic = gatherMessageStatistic(parsedMessages, summaryType);
       
       // Write filter data to file.
       const outFileName = filePath.replace(path.basename(filePath), 'MessageStatistic.json');;
@@ -86,7 +88,7 @@ process.on("message", (filePath: string) => {
     if (filterCalls) {
       sendMessage('Filtering for call messages...');
       parsedMessages.forEach((message: ParsedMessage, index: number) => {
-        if (index % 100 === 0 || index === message.parsedMessages - 1){
+        if (index % 100 === 0 || index === parsedMessages.length - 1){
           process.send(new ProgressUpdate(index, parsedMessages.length - 1));
         }
   
@@ -114,7 +116,7 @@ function sendMessage(message: string) {
   process.send(new LogMessage(message));
 }
 
-function gatherMessageStatistic(parsedMessages: ParsedMessage[]): MessageStatistic {
+function gatherMessageStatistic(parsedMessages: ParsedMessage[], summaryType: string): MessageStatistic {
   const messageStat: MessageStatistic = {};
 
   sendMessage('Gathering messages statistic ...');
@@ -124,9 +126,17 @@ function gatherMessageStatistic(parsedMessages: ParsedMessage[]): MessageStatist
     }
 
     const timestamp:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
+    let startTime: moment.Moment
+    let endTime: moment.Moment
 
-    const startTime = moment({'year': timestamp.year(), 'month': timestamp.month()});
-    const endTime = moment(startTime).add(1, 'months');
+    if (summaryType === 'monthly') {
+      startTime = moment({'year': timestamp.year(), 'month': timestamp.month()});
+      endTime = moment(startTime).add(1, 'months');
+    } else if (summaryType === 'weekly') {
+      startTime = moment(timestamp);
+      startTime.set({"day":0, "hours": 0, "minutes": 0});
+      endTime = moment(startTime).add(1, 'weeks');
+    }
 
     if (timestamp.isBetween(startTime, endTime)) {
       if (!messageStat.hasOwnProperty(startTime.toString())) {
