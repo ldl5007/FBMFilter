@@ -99,6 +99,7 @@ class Main {
 
   @IPCEvent('filter-button')
   private onFilterButton(event, filterData) {
+    console.log(filterData);
 
     // check selectedFile
     if (filterData.selectedFile === "") {

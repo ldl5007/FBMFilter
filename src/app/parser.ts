@@ -53,8 +53,8 @@ process.on("message", (filePath: string) => {
     for (let index = 0; index < messages.length; index ++) {
       const message = messages[index];
 
-      if (index % 100 === 0){
-        process.send(new ProgressUpdate(index, messages.length));
+      if (index % 100 === 0 || index === messages.length - 1){
+        process.send(new ProgressUpdate(index, messages.length - 1));
       }
       
       const parsedMessage = new ParsedMessage();
@@ -86,8 +86,8 @@ process.on("message", (filePath: string) => {
     if (filterCalls) {
       sendMessage('Filtering for call messages...');
       parsedMessages.forEach((message: ParsedMessage, index: number) => {
-        if (index % 100 === 0){
-          process.send(new ProgressUpdate(index, parsedMessages.length));
+        if (index % 100 === 0 || index === message.parsedMessages - 1){
+          process.send(new ProgressUpdate(index, parsedMessages.length - 1));
         }
   
         if (!message.content.includes('Duration')){
@@ -119,8 +119,8 @@ function gatherMessageStatistic(parsedMessages: ParsedMessage[]): MessageStatist
 
   sendMessage('Gathering messages statistic ...');
   parsedMessages.forEach((message: ParsedMessage, index: number) => {
-    if (index % 100 === 0){
-      process.send(new ProgressUpdate(index, parsedMessages.length));
+    if (index % 100 === 0 || index === parsedMessages.length - 1){
+      process.send(new ProgressUpdate(index, parsedMessages.length - 1));
     }
 
     const timestamp:moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);

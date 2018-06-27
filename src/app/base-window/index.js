@@ -14,7 +14,8 @@ $(document).ready(function(){
     let filterData = {
       selectedFile: $("#selected-file").val(),
       filterCalls: $("#filter-calls-checkbox:checked").val(),
-      messagesSummary: $("#messages-summary-checkbox:checked").val()
+      messagesSummary: $("#messages-summary-checkbox:checked").val(),
+      summaryType: $('#messages-summary-select').val()
     };
     ipcRenderer.send('filter-button', filterData);
   });
