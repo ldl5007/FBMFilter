@@ -23,6 +23,7 @@ class MessageStatistic {
 }
 
 class Statistic {
+    element: Element;
     startTime: moment.Moment = null;
     endTime: moment.Moment = null;
     messageCount: number = 0;
@@ -34,7 +35,7 @@ process.on("message", (operationData: IOperationData) => {
     } 
 
     if (operationData.messagesSummary) {
-        messagesSummary(operationData.fullPath, operationData.summaryType, "MessageStatistic.json");
+        messagesSummary(operationData.fullPath, operationData.summaryType, "MessageStatistic.html");
     }
 });
 
@@ -157,12 +158,24 @@ function messagesSummary(filePath: string, summaryType: string, saveFileName: st
 
         const messageStat: MessageStatistic = gatherMessageStatistic(parsedMessages, summaryType);
 
+        for (const timeVal in messageStat) {
+            if (messageStat.hasOwnProperty(timeVal)) {
+                const stat: Statistic = messageStat[timeVal];
+
+                const blockTitle = `From ${stat.startTime.format(TIMESTAMP_FORMAT)} to ${stat.endTime.format(TIMESTAMP_FORMAT)}`;
+                stat.element.querySelector(MESSAGE_TITLE_QUERY_STRING).innerHTML = blockTitle;
+
+                const blockContent = `Total messages count: ${stat.messageCount}`; 
+                stat.element.querySelector(MESSAGE_CONTENT_QUERY_STRING).innerHTML = blockContent;
+                stat.element.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING).innerHTML = "";
+            }
+        }
 
         // Write filter data to file.
         const outFileName = filePath.replace(path.basename(filePath), saveFileName);;
-        fs.writeFileSync(outFileName, JSON.stringify(messageStat));
+        fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
         sendMessage(`Write Data to ${outFileName}`);
-        
+
     } catch (error) {
         sendMessage(error.message);
     }
@@ -197,6 +210,9 @@ function gatherMessageStatistic(parsedMessages: ParsedMessage[], summaryType: st
         if (timestamp.isBetween(startTime, endTime)) {
             if (!messageStat.hasOwnProperty(startTime.toString())) {
                 messageStat[startTime.toString()] = new Statistic();
+                messageStat[startTime.toString()].element = message.element;
+            } else {
+                message.element.parentElement.removeChild(message.element);
             }
 
             // Update the start time when found an earlier timestamp
