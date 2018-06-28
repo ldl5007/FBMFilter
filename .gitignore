@@ -4,6 +4,7 @@ logs/
 .idea/*
 !.idea/runConfigurations
 build/
+facebook-messages-filter-win32-x64/
 package-lock.json
 ElectronBoilerplate*/
 Electron-Base-Application.iml
