@@ -7,6 +7,8 @@ import { ThreadMessage, IOperationData, OperationData } from "../app/interfaces/
 
 let parserThread;
 
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=4096');
+
 @ElectronMain
 class Main {
   public mainWindow: Electron.BrowserWindow;
