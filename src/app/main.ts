@@ -26,7 +26,7 @@ class Main {
     let url = require('url').format({
       protocol: 'file',
       slashes: true,
-      pathname: require('path').join(__dirname, 'base-window/index.html')
+      pathname: require('path').join(__dirname, 'base-window', 'index.html')
     });
 
     console.log(`loading file: ${url}`);
