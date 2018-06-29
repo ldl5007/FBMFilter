@@ -207,7 +207,7 @@ function gatherMessageStatistic(parsedMessages: ParsedMessage[], summaryType: st
         }
 
         // If the timestamp is between the start and end time then add it to a block.
-        if (timestamp.isBetween(startTime, endTime)) {
+        if (timestamp.isSame(startTime) || timestamp.isBetween(startTime, endTime)) {
             if (!messageStat.hasOwnProperty(startTime.toString())) {
                 messageStat[startTime.toString()] = new Statistic();
                 messageStat[startTime.toString()].element = message.element;
