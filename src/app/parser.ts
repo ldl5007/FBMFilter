@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as moment from "moment";
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import { LogMessage, ProgressUpdate, IOperationData } from "../app/interfaces/thread-message.interface";
 
 const MESSAGE_QUERY_STRING = '.pam._3-95._2pi0._2lej.uiBoxWhite.noborder';
@@ -10,13 +10,6 @@ const MESSAGE_CONTENT_QUERY_STRING = '._3-96._2let';
 const MESSAGE_TIMESTAMP_QUERY_STRING = '._3-94._2lem';
 
 const TIMESTAMP_FORMAT = 'MMM DD, YYYY hh:mmA';
-
-class ParsedMessage {
-    public element: Element;
-    public title: string;
-    public content: string;
-    public timestamp: string;
-}
 
 class MessageStatistic {
     [key: string]: Statistic;
@@ -37,6 +30,8 @@ process.on("message", (operationData: IOperationData) => {
     if (operationData.messagesSummary) {
         messagesSummary(operationData.fullPath, operationData.summaryType, "MessageStatistic.html");
     }
+
+    sendMessage("Operation completed.");
 });
 
 function sendMessage(message: string) {
@@ -46,7 +41,7 @@ function sendMessage(message: string) {
 function filterCalls(filePath: string, saveFileName: string) {
     console.log(filePath);
     let foundMessages = 0;
-    const parsedMessages: ParsedMessage[] = [];
+    let messageCount = 0;
 
     try {
         // Read file content
@@ -55,57 +50,28 @@ function filterCalls(filePath: string, saveFileName: string) {
 
         // Build DOM from file content
         sendMessage(`Loading ${path.basename(filePath)}...`);
-        const dom = new JSDOM(fileContent);
+        const $ = cheerio.load(fileContent);
 
         // Query for all messages within the DOM
-        sendMessage('Searching for messages...');
-        const messages = dom.window.document.querySelectorAll(MESSAGE_QUERY_STRING);
+        messageCount = $(MESSAGE_QUERY_STRING).length;
+        sendMessage(`Found ${messageCount} messages.`);
 
-        // Loop throught all of the messages and filter out only message with "duration"
-        sendMessage('Extracting messages informations...');
-        for (let index = 0; index < messages.length; index++) {
-            const message = messages[index];
-
-            if (index % 100 === 0 || index === messages.length - 1) {
-                process.send(new ProgressUpdate(index, messages.length - 1));
+        $(MESSAGE_QUERY_STRING).each((index, element) => {
+            if (index % 100 === 0 || index === messageCount - 1) {
+                process.send(new ProgressUpdate(index, messageCount - 1));
             }
 
-            const parsedMessage = new ParsedMessage();
-            parsedMessage.element = message;
-
-            const titleElement = message.querySelector(MESSAGE_TITLE_QUERY_STRING);
-            const contentElement = message.querySelector(MESSAGE_CONTENT_QUERY_STRING);
-            const timestampElement = message.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING);
-
-            if (titleElement && contentElement && timestampElement) {
-                parsedMessage.title = titleElement.textContent;
-                parsedMessage.content = contentElement.textContent;
-                parsedMessage.timestamp = timestampElement.textContent;
-                parsedMessages.push(parsedMessage);
-            }
-        }
-        sendMessage('Extracting messages informations completed');
-        sendMessage(`Found ${parsedMessages.length} messages.`);
-
-        sendMessage('Filtering for call messages...');
-        parsedMessages.forEach((message: ParsedMessage, index: number) => {
-            if (index % 100 === 0 || index === parsedMessages.length - 1) {
-                process.send(new ProgressUpdate(index, parsedMessages.length - 1));
-            }
-
-            if (!message.content.includes('Duration')) {
-                message.element.parentElement.removeChild(message.element);
-            }
-            else {
-                foundMessages++;
+            if ($(element).find(MESSAGE_CONTENT_QUERY_STRING).text().includes('Duration')) {
+                foundMessages ++;
+            } else {
+                $(element).remove();
             }
         });
-        sendMessage('Filtering for call messages completed');
         sendMessage(`Found ${foundMessages} call messages`);
 
         // Write filter data to file.
-        const outFileName = filePath.replace(path.basename(filePath), saveFileName);;
-        fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
+        const outFileName = filePath.replace(path.basename(filePath), saveFileName);
+        fs.writeFileSync(outFileName, $.html());
         sendMessage(`Write Data to ${outFileName}`);
     } catch (error) {
         sendMessage(error.message);
@@ -114,8 +80,8 @@ function filterCalls(filePath: string, saveFileName: string) {
 
 function messagesSummary(filePath: string, summaryType: string, saveFileName: string) {
     console.log(filePath);
-    let foundMessages = 0;
-    const parsedMessages: ParsedMessage[] = [];
+    let messageCount = 0;
+    let messageStat: MessageStatistic = {};
 
     try {
         // Read file content
@@ -124,121 +90,96 @@ function messagesSummary(filePath: string, summaryType: string, saveFileName: st
 
         // Build DOM from file content
         sendMessage(`Loading ${path.basename(filePath)}...`);
-        const dom = new JSDOM(fileContent);
+        const $ = cheerio.load(fileContent);
 
         // Query for all messages within the DOM
-        sendMessage('Searching for messages...');
-        const messages = dom.window.document.querySelectorAll(MESSAGE_QUERY_STRING);
+        messageCount = $(MESSAGE_QUERY_STRING).length;
+        sendMessage(`Found ${messageCount} messages.`);
 
-        // Loop throught all of the messages and filter out only message with "duration"
-        sendMessage('Extracting messages informations...');
-        for (let index = 0; index < messages.length; index++) {
-            const message = messages[index];
-
-            if (index % 100 === 0 || index === messages.length - 1) {
-                process.send(new ProgressUpdate(index, messages.length - 1));
+        $(MESSAGE_QUERY_STRING).each((index, element) => {
+            if (index % 100 === 0 || index === messageCount - 1) {
+                process.send(new ProgressUpdate(index, messageCount - 1));
             }
 
-            const parsedMessage = new ParsedMessage();
-            parsedMessage.element = message;
+            const timesStamp = $(element).find(MESSAGE_TIMESTAMP_QUERY_STRING).text();
 
-            const titleElement = message.querySelector(MESSAGE_TITLE_QUERY_STRING);
-            const contentElement = message.querySelector(MESSAGE_CONTENT_QUERY_STRING);
-            const timestampElement = message.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING);
-
-            if (titleElement && contentElement && timestampElement) {
-                parsedMessage.title = titleElement.textContent;
-                parsedMessage.content = contentElement.textContent;
-                parsedMessage.timestamp = timestampElement.textContent;
-                parsedMessages.push(parsedMessage);
+            const keyCount = Object.keys(messageStat).length;
+            messageStat = gatherMessageStatistic(messageStat, element, timesStamp, summaryType);
+            // check if key changes
+            if (keyCount === Object.keys(messageStat).length) {
+                $(element).remove();
             }
-        }
-        sendMessage('Extracting messages informations completed');
-        sendMessage(`Found ${parsedMessages.length} messages.`);
+        });
 
-        const messageStat: MessageStatistic = gatherMessageStatistic(parsedMessages, summaryType);
+        sendMessage(`Generated ${Object.keys(messageStat).length} messages groups.`);
 
         for (const timeVal in messageStat) {
             if (messageStat.hasOwnProperty(timeVal)) {
                 const stat: Statistic = messageStat[timeVal];
 
                 const blockTitle = `From ${stat.startTime.format(TIMESTAMP_FORMAT)} to ${stat.endTime.format(TIMESTAMP_FORMAT)}`;
-                stat.element.querySelector(MESSAGE_TITLE_QUERY_STRING).innerHTML = blockTitle;
+                $(stat.element).find(MESSAGE_TITLE_QUERY_STRING).text(blockTitle);
 
                 const blockContent = `Total messages count: ${stat.messageCount}`; 
-                stat.element.querySelector(MESSAGE_CONTENT_QUERY_STRING).innerHTML = blockContent;
-                stat.element.querySelector(MESSAGE_TIMESTAMP_QUERY_STRING).innerHTML = "";
+                $(stat.element).find(MESSAGE_CONTENT_QUERY_STRING).text(blockContent);
+                $(stat.element).find(MESSAGE_TIMESTAMP_QUERY_STRING).remove();
             }
         }
 
         // Write filter data to file.
-        const outFileName = filePath.replace(path.basename(filePath), saveFileName);;
-        fs.writeFileSync(outFileName, dom.window.document.documentElement.outerHTML);
+        const outFileName = filePath.replace(path.basename(filePath), saveFileName);
+        fs.writeFileSync(outFileName, $.html());
         sendMessage(`Write Data to ${outFileName}`);
-
     } catch (error) {
         sendMessage(error.message);
     }
 }
 
 
-function gatherMessageStatistic(parsedMessages: ParsedMessage[], summaryType: string): MessageStatistic {
-    const messageStat: MessageStatistic = {};
+function gatherMessageStatistic(messageStat: MessageStatistic, element, currentTimeStamp: string, summaryType: string): MessageStatistic {
     let startTime: moment.Moment
     let endTime: moment.Moment
 
-    sendMessage('Gathering messages statistic ...');
-    parsedMessages.forEach((message: ParsedMessage, index: number) => {
-        if (index % 100 === 0 || index === parsedMessages.length - 1) {
-            process.send(new ProgressUpdate(index, parsedMessages.length - 1));
+    // Load current time stamp value
+    const timestamp: moment.Moment = moment(currentTimeStamp.trim(), [TIMESTAMP_FORMAT]);
+
+    // Calculating the start time and end time depend on the type of summary
+    if (summaryType === 'monthly') {
+        startTime = moment({ 'year': timestamp.year(), 'month': timestamp.month() });
+        endTime = moment(startTime).add(1, 'months');
+    } else if (summaryType === 'weekly') {
+        startTime = moment(timestamp);
+        startTime.set({ "day": 0, "hours": 0, "minutes": 0 });
+        endTime = moment(startTime).add(1, 'weeks');
+    }
+
+    // If the timestamp is between the start and end time then add it to a block.
+    if (timestamp.isSame(startTime) || timestamp.isBetween(startTime, endTime)) {
+        if (!messageStat.hasOwnProperty(startTime.toString())) {
+            messageStat[startTime.toString()] = new Statistic();
+            messageStat[startTime.toString()].element = element;
         }
 
-        // Load current time stamp value
-        const timestamp: moment.Moment = moment(message.timestamp.trim(), [TIMESTAMP_FORMAT]);
-
-        // Calculating the start time and end time depend on the type of summary
-        if (summaryType === 'monthly') {
-            startTime = moment({ 'year': timestamp.year(), 'month': timestamp.month() });
-            endTime = moment(startTime).add(1, 'months');
-        } else if (summaryType === 'weekly') {
-            startTime = moment(timestamp);
-            startTime.set({ "day": 0, "hours": 0, "minutes": 0 });
-            endTime = moment(startTime).add(1, 'weeks');
-        }
-
-        // If the timestamp is between the start and end time then add it to a block.
-        if (timestamp.isBetween(startTime, endTime)) {
-            if (!messageStat.hasOwnProperty(startTime.toString())) {
-                messageStat[startTime.toString()] = new Statistic();
-                messageStat[startTime.toString()].element = message.element;
-            } else {
-                message.element.parentElement.removeChild(message.element);
-            }
-
-            // Update the start time when found an earlier timestamp
-            if (messageStat[startTime.toString()].startTime === null) {
+        // Update the start time when found an earlier timestamp
+        if (messageStat[startTime.toString()].startTime === null) {
+            messageStat[startTime.toString()].startTime = timestamp;
+        } else {
+            if (messageStat[startTime.toString()].startTime.isAfter(timestamp)) {
                 messageStat[startTime.toString()].startTime = timestamp;
-            } else {
-                if (messageStat[startTime.toString()].startTime.isAfter(timestamp)) {
-                    messageStat[startTime.toString()].startTime = timestamp;
-                }
             }
-
-            // Update end time when found later timestamp
-            if (messageStat[startTime.toString()].endTime === null) {
-                messageStat[startTime.toString()].endTime = timestamp;
-            } else {
-                if (messageStat[startTime.toString()].endTime.isBefore(timestamp)) {
-                    messageStat[startTime.toString()].endTime = timestamp;
-                }
-            }
-
-            // Update message count
-            messageStat[startTime.toString()].messageCount++;
         }
-    });
-    sendMessage('Gathering messages statistic completed');
 
-    console.log(JSON.stringify(messageStat));
+        // Update end time when found later timestamp
+        if (messageStat[startTime.toString()].endTime === null) {
+            messageStat[startTime.toString()].endTime = timestamp;
+        } else {
+            if (messageStat[startTime.toString()].endTime.isBefore(timestamp)) {
+                messageStat[startTime.toString()].endTime = timestamp;
+            }
+        }
+
+        // Update message count
+        messageStat[startTime.toString()].messageCount++;
+    }
     return messageStat;
 }

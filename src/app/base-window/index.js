@@ -37,8 +37,12 @@ $(document).ready(function(){
 
   ipcRenderer.on('log-message', function(event, message){
     console.log('log-message: ' + message);
-    const logText = $('#log-area').text() + message + '\n';
-    $('#log-area').text(logText)
+    $('#log-area').append(message + '\n');
+
+    var psconsole = $('#log-area');
+    if(psconsole.length) {
+      psconsole.scrollTop(psconsole[0].scrollHeight - psconsole.height())
+    }
   });
 
   ipcRenderer.on('set-progress', function(event, progressData){
