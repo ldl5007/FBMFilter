@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import * as path from "path";
 import * as childProcess from "child_process";
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
@@ -21,7 +20,7 @@ class Main {
     // Create the browser window.
     this.mainWindow = new BrowserWindow({ width: 800, height: 600 });
 
-    this.mainWindow.setMenuBarVisibility(false);
+    this.mainWindow.setMenuBarVisibility(true);
 
     let url = require('url').format({
       protocol: 'file',
@@ -34,8 +33,9 @@ class Main {
     // and load the index.html of the app.
     this.mainWindow.loadURL(url);
 
+    console.log(`open dev tools`);
     // Open the DevTools.
-    // this.mainWindow.webContents.openDevTools();
+    this.mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     this.mainWindow.on('closed', () => {
