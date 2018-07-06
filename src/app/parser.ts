@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as moment from "moment";
 import * as cheerio from "cheerio";
-import { LogMessage, ProgressUpdate, IOperationData } from "../app/interfaces/thread-message.interface";
+import { LogMessage, ProgressUpdate, OperationCompleted, IOperationData } from "../app/interfaces/thread-message.interface";
 
 const MESSAGE_QUERY_STRING = '.pam._3-95._2pi0._2lej.uiBoxWhite.noborder';
 const MESSAGE_TITLE_QUERY_STRING = '._3-96._2pio._2lek._2lel';
@@ -31,7 +31,7 @@ process.on("message", (operationData: IOperationData) => {
         messagesSummary(operationData.fullPath, operationData.summaryType, "MessageStatistic.html");
     }
 
-    sendMessage("Operation completed.");
+    process.send(new OperationCompleted("Operation Completed"));
 });
 
 function sendMessage(message: string) {
@@ -50,7 +50,7 @@ function filterCalls(filePath: string, saveFileName: string) {
 
         // Build DOM from file content
         sendMessage(`Loading ${path.basename(filePath)}...`);
-        const $ = cheerio.load(fileContent);
+        const $ = cheerio.load(fileContent.toString());
 
         // Query for all messages within the DOM
         messageCount = $(MESSAGE_QUERY_STRING).length;
@@ -90,7 +90,7 @@ function messagesSummary(filePath: string, summaryType: string, saveFileName: st
 
         // Build DOM from file content
         sendMessage(`Loading ${path.basename(filePath)}...`);
-        const $ = cheerio.load(fileContent);
+        const $ = cheerio.load(fileContent.toString());
 
         // Query for all messages within the DOM
         messageCount = $(MESSAGE_QUERY_STRING).length;

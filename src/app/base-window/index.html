@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title id="app-title">Facebook Messenger Filter - Version 1.0.0</title>
+        <title id="app-title">Facebook Messenger Filter - Version 1.1.0</title>
 
         <!-- include open source css, jQuery, and bootstrap files -->
         <link href="../css/photon-0.1.2-dist/css/photon.css" rel="stylesheet">
@@ -20,28 +20,29 @@
                 <div class="form-control top-border">
                     <label>Select messages file</label>
                     <div class="form-group">
-                        <button class="btn btn-positive" id="browse-button">Browse</button>
-                        <input class="form-control" id="selected-file" type="text">
+                        <button class="btn btn-positive user-input" id="browse-button">Browse</button>
+                        <input class="form-control user-input" id="selected-file" type="text">
                     </div>
                 </div>
                 <div class="form-control no-border">
                     <div class="checkbox">
                         <label class="align-center">
-                          <input type="checkbox" id="messages-summary-checkbox"> Messages Statistic Summary
+                          <input class="user-input" type="checkbox" id="messages-summary-checkbox"> Messages Statistic Summary
                         </label>
-                        <select class="form-control" id="messages-summary-select" disabled>
+                        <select class="form-control user-input" id="messages-summary-select" disabled>
                             <option>monthly</option>
                             <option>weekly</option>
                         </select>
                     </div>
                     <div class="checkbox">
                         <label>
-                          <input type="checkbox" id="filter-calls-checkbox" checked> Filter Calls
+                          <input class="user-input" type="checkbox" id="filter-calls-checkbox" checked> Filter Calls
                         </label>
                     </div>
                 </div>    
                 <div class="form-control no-border">
-                    <button class="btn btn-primary" id="filter-button">Start Filter</button>
+                    <button class="btn btn-primary user-input" id="filter-button">Start Filter</button>
+                    <button class="btn btn-default user-input" id="open-folder" disabled>Open Folder</button>
                 </div>
                 
                 <div class="form-control no-border" style="height: 60vh">

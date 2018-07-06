@@ -1,16 +1,17 @@
 const gulp = require('gulp');
 const clean = require('gulp-clean');
-const gutil = require('gulp-util');
 const ts = require('gulp-typescript');
 const run = require('gulp-run');
 const sourcemaps = require('gulp-sourcemaps');
 const pkg = require('./package.json');
+const colors = require('ansi-colors');
+const log = require('fancy-log');
 
 const tsProject = ts.createProject('tsconfig.json');
 
-gutil.log(gutil.colors.yellow('App Name  : '), gutil.colors.green.bold(pkg.name));
-gutil.log(gutil.colors.yellow('Version   : '), gutil.colors.green.bold(pkg.version));
-gutil.log(gutil.colors.yellow('Entry File: '), gutil.colors.green.bold(pkg.main));
+log(colors.yellow('App Name  : '), colors.green.bold(pkg.name));
+log(colors.yellow('Version   : '), colors.green.bold(pkg.version));
+log(colors.yellow('Entry File: '), colors.green.bold(pkg.main));
 
 gulp.task('clean', function(){
   // Clean up the build directory

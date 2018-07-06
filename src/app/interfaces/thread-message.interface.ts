@@ -13,6 +13,21 @@ export class LogMessage implements ILogMessage {
     } 
 }
 
+export interface IOperationCompleted {
+    type: "completed",
+    message: string
+}
+
+export class OperationCompleted implements IOperationCompleted {
+    public type;
+    public message;
+
+    constructor(message: string) {
+        this.type = "completed",
+        this.message = message;
+    }
+}
+
 export interface IProgressUpdate {
     type: "progress",
     val: number,
@@ -45,4 +60,4 @@ export class OperationData implements IOperationData{
     public summaryType = "";
 }
 
-export type ThreadMessage = ILogMessage | IProgressUpdate;
+export type ThreadMessage = ILogMessage | IProgressUpdate | IOperationCompleted;

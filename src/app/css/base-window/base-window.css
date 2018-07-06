@@ -23,6 +23,11 @@
     width: 85vw
 }
 
+#open-folder {
+    position: absolute;
+    right: 10px;
+}
+
 #messages-summary-select {
     width: fit-content;
 }
