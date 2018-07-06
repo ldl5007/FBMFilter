@@ -21,6 +21,10 @@ $(document).ready(function(){
     ipcRenderer.send('filter-button', filterData);
   });
 
+  $('#open-folder').on('click', () => {
+    ipcRenderer.send('open-folder', $("#selected-file").val());
+  });
+
   $('#messages-summary-checkbox').on('click', () => {
     console.log('message-summary-checkbox clicked');
 
@@ -34,6 +38,7 @@ $(document).ready(function(){
   ipcRenderer.on('set-seleted-file', function(event, arg){
     console.log('set selected file to ' + arg);
     $("#selected-file").val(arg);
+    $("#open-folder").attr("disabled", null);
   });
 
   ipcRenderer.on('log-message', function(event, message){

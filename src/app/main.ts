@@ -100,6 +100,13 @@ ipcMain.on('filter-button', (event, filterData) => {
   parserThread.send(operationData);
 });
 
+ipcMain.on('open-folder', (event, data: string) => {
+  let folderPath = data.replace(path.basename(data), "");
+
+  fancyLog(`open folder: ${folderPath}`);
+  childProcess.exec(`start "" "${folderPath}"`);
+});
+
 function log(message) {
   fancyLog(message);
   mainWindow.webContents.send('log-message', message);
