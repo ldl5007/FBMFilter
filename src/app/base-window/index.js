@@ -17,7 +17,7 @@ $(document).ready(function(){
       messagesSummary: $("#messages-summary-checkbox:checked").val(),
       summaryType: $('#messages-summary-select').val()
     };
-    $('#filter-button').attr("disabled", "disabled");
+    $('.user-input').attr("disabled", "disabled");
     ipcRenderer.send('filter-button', filterData);
   });
 
@@ -56,6 +56,6 @@ $(document).ready(function(){
   });
 
   ipcRenderer.on('operation-completed', () => {
-    $('#filter-button').attr("disabled", null);
+    $('.user-input').attr("disabled", null);
   });
 });
