@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as childProcess from "child_process";
+import * as fancyLog from "fancy-log";
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import { ThreadMessage, IOperationData, OperationData } from "../app/interfaces/thread-message.interface";
 
@@ -12,7 +13,7 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600})
 
-  let url = require('path').join(__dirname, 'base-window', 'index.html');
+  let url = path.join(__dirname, 'base-window', 'index.html');
   // and load the index.html of the app.
   mainWindow.loadFile(url)
 
@@ -58,8 +59,6 @@ app.on('activate', function () {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 ipcMain.on('browse-button', (event) => {
-  console.log('woo hoo we got the message');
-
   const selectedFile: string[] = dialog.showOpenDialog({ properties: ['openFile'] });
   if (selectedFile) {
     log(`Selected File: ${path.basename(selectedFile[0])}`);
@@ -95,13 +94,13 @@ ipcMain.on('filter-button', (event, filterData) => {
     operationData.summaryType = filterData.summaryType;
   }
 
-  console.log(JSON.stringify(operationData));
+  fancyLog(JSON.stringify(operationData));
 
   parserThread.send(operationData);
 });
 
 function log(message) {
-  console.log(message);
+  fancyLog(message);
   mainWindow.webContents.send('log-message', message);
 }
 
@@ -118,13 +117,17 @@ function setProgress(val?, max?) {
 }
 
 function parserThreadMessageHandler(threadMessage: ThreadMessage) {
-  console.log(JSON.stringify(threadMessage));
+  fancyLog(JSON.stringify(threadMessage));
   switch(threadMessage.type) {
     case "message":
       log(threadMessage.message);
       break;
     case "progress":
       setProgress(threadMessage.val, threadMessage.max);
+      break;
+    case "completed":
+      log(threadMessage.message);
+      mainWindow.webContents.send('operation-completed');
       break;
   }
 }
