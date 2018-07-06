@@ -12,6 +12,7 @@ let parserThread;
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600})
+  mainWindow.setMenuBarVisibility(false);
 
   let url = path.join(__dirname, 'base-window', 'index.html');
   // and load the index.html of the app.
